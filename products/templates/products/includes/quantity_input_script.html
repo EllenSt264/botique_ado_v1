@@ -1,0 +1,54 @@
+<script type="text/javascript">
+    // Call this function each time a button is clicked
+    // Disable +/- buttons outside 1-99 range
+    function handleEnableDisable(itemId) {
+        var currentValue = parseInt($(`#id_qty_${itemId}`).val());
+        var minusDisabled = currentValue < 2;
+        var plusDisabled = currentValue > 98;
+        $(`#decrement-qty_${itemId}`).prop('disabled', minusDisabled);
+        $(`#increment-qty_${itemId}`).prop('disabled', plusDisabled);
+    }
+
+    // Disable the minus button by default by getting all the quantity inputs
+    // on the page, iterating through them and calling the enable/disable function.
+    // This will prevent users from clicking the minus button with the default value 
+    // set to one, causing a quantity number of zero.
+    var allQtyInputs = $('.qty_input');
+    for(var i = 0; i < allQtyInputs.length; i++){
+        var itemId = $(allQtyInputs[i]).data('item_id');
+        handleEnableDisable(itemId);
+    }
+
+    // Call the enable/disable function by listening to the change event 
+    // on the quantity input and calling it every time the input changes.
+    $('.qty_input').change(function() {
+        var itemId = $(this).data('item_id');
+        handleEnableDisable(itemId);
+    });
+
+    // Increment quantity
+    $('.increment-qty').click(function(e) {
+       e.preventDefault();
+       // Find the closest input box using the closest method
+       var closestInput = $(this).closest('.input-group').find('.qty_input')[0];
+       // Cache the value that's currently in it into a variable called currentValue
+       var currentValue = parseInt($(closestInput).val());
+       // Use that variable to set the input boxes new value to the current value plus one
+       $(closestInput).val(currentValue + 1);
+       var itemId = $(this).data('item_id');
+       handleEnableDisable(itemId);
+    });
+
+    // Decrement quantity
+    $('.decrement-qty').click(function(e) {
+       e.preventDefault();
+       // Find the closest input box using the closest method
+       var closestInput = $(this).closest('.input-group').find('.qty_input')[0];
+       // Cache the value that's currently in it into a variable called currentValue
+       var currentValue = parseInt($(closestInput).val());
+       // Use that variable to set the input boxes new value to the current value minus one
+       $(closestInput).val(currentValue - 1);
+       var itemId = $(this).data('item_id');
+       handleEnableDisable(itemId);
+    });
+</script>
