@@ -125,7 +125,25 @@
     </header>
 
     {% if messages %}
-        <div class="message-container"></div>
+        <div class="message-container">
+            {% for message in messages %}
+                {% with message.level as level %}
+                    <!-- In Django, level 40 is an error -->
+                    {% if level == 40 %}
+                        {% include 'includes/toasts/toast_error.html' %}
+                    <!-- Level 30 is a warning -->
+                    {% elif level == 30 %}
+                        {% include 'includes/toasts/toast_warning.html' %}
+                    <!-- Level 25 is a success -->
+                    {% elif level == 25 %}
+                        {% include 'includes/toasts/toast_success.html' %}
+                    <!-- Default to the info toast for everything else -->
+                    {% else %}
+                        {% include 'includes/toasts/toast_info.html' %}
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+        </div>
     {% endif %}
 
     {% block page_header %}
@@ -134,7 +152,21 @@
     {% block content %}
     {% endblock %}
 
+    <!-- 
+        Putting this script in the base template will ensure that every page
+        that loads will immediately call the show option on all toasts
+        that have been rendered in the messages container.
+
+        This also illustrates why we have been including block .super
+        in our templates when overriding the postloadjs block. By doing
+        that we ensure that any JavaScript we've written in the
+        templates that extend this one won't overwrite this
+        call to show all the toasts.
+     -->
     {% block postloadjs %}
+    <script type="text/javascript">
+        $('.toast').toast('show');
+    </script>
     {% endblock %}
 
 </body>

@@ -80,6 +80,15 @@ TEMPLATES = [
     },
 ]
 
+"""
+    We need to add this setting to tell settings.py to store messages in
+    the session storage. This is often not required as there is a
+    default which falls back to this storage method but this
+    is required when using Gitpod.
+"""
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
