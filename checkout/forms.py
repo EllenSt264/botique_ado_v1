@@ -5,15 +5,15 @@ from .models import Order
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ('full_name', 'email', 'phone_number'
+        fields = ('full_name', 'email', 'phone_number',
                   'street_address1', 'street_address2',
                   'town_or_city', 'postcode', 'country',
                   'county')
-  
-    def __init__(self):
-        """ 
-        Add placeholders and classes, remove auto-generated labels
-        and set autofocus on first field
+
+    def __init__(self, *args, **kwargs):
+        """
+        Add placeholders and classes, remove auto-generated
+        labels and set autofocus on first field
         """
 
         # We call the default init method to set the form up
@@ -23,22 +23,21 @@ class OrderForm(forms.ModelForm):
         # Create dictionary of placeholders that will show up
         # in the form fields.
         placeholders = {
-            'fullname': 'Full Name',
+            'full_name': 'Full Name',
             'email': 'Email Address',
             'phone_number': 'Phone Number',
             'country': 'Country',
-            'postcode': 'Postcode',
+            'postcode': 'Postal Code',
             'town_or_city': 'Town or City',
             'street_address1': 'Street Address 1',
             'street_address2': 'Street Address 2',
-            'country': 'Country',
+            'county': 'County',
         }
 
         # Set the autofocus attribute on the full name field to true
         # so the cursor will start in the full name field when
         # the user loads the page.
         self.fields['full_name'].widget.attrs['autofocus'] = True
-
         for field in self.fields:
             # Iterate through the form's fields, adding a star if it's
             # a required field on the model
@@ -51,7 +50,7 @@ class OrderForm(forms.ModelForm):
             # dictionary defined above
             self.fields[field].widget.attrs['placeholder'] = placeholder
 
-            # the dictionary above, and adding a CSS class that we'll use later
+            # Add a CSS class that we'll use later
             self.fields[field].widget.attrs['class'] = 'stripe-style-input'
 
             # Remove the form field labels as we no longer need them
