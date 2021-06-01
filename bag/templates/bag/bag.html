@@ -47,7 +47,7 @@
                                     <p class="my-0">${{ item.product.price }}</p>
                                 </td>
                                 <td class="py-3">
-                                    <form action="" method="POST" class="form update-form">
+                                    <form action="{% url 'adjust_bag' item.item_id %}" method="POST" class="form update-form">
                                         {% csrf_token %}
                                         <div class="form-group">
                                             <div class="input-group">
@@ -74,13 +74,8 @@
                                             </div>
                                         </div>
                                     </form>
-                                    <div class="row">
-                                        <div class="col-sm-12 col-md-6">
-                                            <a class="update-link text-info"><small>Update</small></a>
-                                        </div>
-                                        <div class="col-sm-12 col-md-6">
-                                            <a class="remove-item text-danger" id="remove_{{ item.item_id }}" data-size="{{ item.size }}"><small>Remove</small></a>
-                                        </div>
+                                        <a class="update-link text-info"><small>Update</small></a>
+                                        <a class="remove-item text-danger" id="remove_{{ item.item_id }}" data-product_size="{{ item.size }}"><small>Remove</small></a>
                                     </div>
                                 </td>
                                 <td class="py-3">
@@ -135,7 +130,6 @@
 {% block postloadjs %}
 {{ block.super }}
 {% include 'products/includes/quantity_input_script.html' %}
-{% endblock %}
 
 <script type="text/javascript">
     // Update quantity on click
@@ -155,10 +149,10 @@
         // Item id
         var itemId = $(this).attr('id').split('remove_')[1];
         // Item size
-        var size = $(this).data('size');
+        var size = $(this).data('product_size');
 
-        var url = `/bag/remove/${itemId}`;
-        var data = {'csrfmiddlewaretoken': csrfToken, 'size': size}
+        var url = `/bag/remove/${itemId}/`;
+        var data = {'csrfmiddlewaretoken': csrfToken, 'product_size': size}
 
         $.post(url, data)
          .done(function() {
@@ -166,3 +160,4 @@
          })
     })
 </script>
+{% endblock %}
