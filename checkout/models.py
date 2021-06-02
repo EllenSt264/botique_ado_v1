@@ -41,7 +41,12 @@ class Order(models.Model):
         # behaviour is to add a new field to the query set called
         # lineitem_total_sum, which we can get and then set
         # the order total to that.
-        self.order_total = self.lineitems.aggregate(Sum('lineitem_total'))['lineitem_total_sum']
+
+        # The 'or 0' will prevent an error if we manually delete all the
+        # line items from an order by making sure that this sets the
+        # order total to zero instead of none.
+        self.order_total = self.lineitems.aggregate(
+            Sum('lineitem_total'))['lineitem_total__sum'] or 0
 
         # With the order total calculated we can calculate the delivery cost
         # using the free delivery threshold and standard delivery
