@@ -55,6 +55,18 @@ form.addEventListener('submit', function(ev) {
     ev.preventDefault();
     card.update({ 'disabled': true});
     $('#submit-button').attr('disabled', true);
+
+    // Stripe could potentially confirm the payment, but the user could close the
+    // page before the form in submitted, causing a payment in stripe but no
+    // order in the database. Or, if we were building a real store that 
+    // needed to complete post order operations like fulfillment 
+    // sending, internal email notifications etc, then none
+    // of that would be triggered because the user
+    // never fully completed their order.
+    // This could result in a customer being charged and never recieving 
+    // a confirmation email or even their order.
+    // To prevent this we're going to build some redunacy.
+
     stripe.confirmCardPayment(clientSecret, {
         payment_method: {
             card: card,
