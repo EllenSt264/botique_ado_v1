@@ -127,8 +127,11 @@ button:disabled {
 }
 
 .fieldset-label {
-    position: relative;
-    right: 5rem;
+    padding: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #555555 !important;
+    letter-spacing: 1px;
 }
 
 .controls input {
@@ -137,6 +140,34 @@ button:disabled {
     color: #000;
     border: 1px solid #000;
     border-radius: none;
+}
+
+select,
+select option {
+    width: 100%;
+    color: #000;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+select:invalid,
+select option[value=""] {
+    color: #757575 !important;
+}
+
+.form-check {
+    margin-top: 25px;
+    float: right;
+}
+
+.form-check input#id-save-info {
+    float: right;
+    margin-left: 10px;
+}
+
+.form-check-label {
+    margin: 5px 0;
 }
 
 #loading-overlay {
