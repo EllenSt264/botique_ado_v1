@@ -6,6 +6,8 @@ from django.conf import settings
 from .forms import OrderForm
 from .models import Order, OrderLineItem
 from products.models import Product
+from profiles.models import UserProfile
+from profiles.forms import UserProfileForm
 from bag.contexts import bag_contents
 
 import stripe
@@ -99,7 +101,7 @@ def checkout(request):
             # Attach whether or not the user wanted to save their profile 
             # information to the session and then redirect them to a
             # new page called checkout success
-            request.session['save_info'] = 'save_info' in request.POST
+            request.session['save_info'] = 'save-info' in request.POST
             return redirect(reverse('checkout_success', args=[order.order_number]))
         else:
             messages.error(request, 'There was an error with your form. \
@@ -130,6 +132,28 @@ def checkout(request):
 
         order_form = OrderForm()
 
+        if request.user.is_authenticated:
+            # Get user's profile and use inital parameter on the order
+            # form to pre-fill its fields
+            try:
+                profile = UserProfile.objects.get(user=request.user)
+                order_form = OrderForm(initial={
+                    'full_name': profile.user.get_full_name(),
+                    'email': profile.user.email,
+                    'phone_number': profile.default_phone_number,
+                    'street_address1': profile.default_street_address1,
+                    'street_address2': profile.default_street_address2,
+                    'town_or_city': profile.default_town_or_city,
+                    'postcode': profile.default_postcode,
+                    'county': profile.default_county,
+                    'country': profile.default_country,
+                })
+            except UserProfile.DoesNotExist:
+                # render empty form if user is not authenticated
+                order_form = OrderForm()
+        else:
+            order_form = OrderForm()
+
     # Alert message for if public key is missing
     if not stripe_public_key:
         messages.warning(request, 'Stripe public key is missing. \
@@ -145,7 +169,6 @@ def checkout(request):
     return render(request, template, context)
 
 
-
 def checkout_success(request, order_number):
     """ Handle successful checkouts """
 
@@ -159,6 +182,37 @@ def checkout_success(request, order_number):
     # and attach a success message letting the
     # user know what their order number is
     order = get_object_or_404(Order, order_number=order_number)
+
+    # Check if a user is authenticated, because if so then they
+    # will have a profile that was created for them
+    if request.user.is_authenticated:
+        profile = UserProfile.objects.get(user=request.user)
+        # Attach the user's profile to the order
+        order.user_profile = profile
+        order.save()
+
+        # If save_info was checked then pull data to go into the
+        # user's profile off the order into a dictionary of
+        # profile data
+        if save_info:
+            profile_data = {
+                'default_phone_number': order.phone_number,
+                'default_street_address1': order.street_address1,
+                'default_street_address2': order.street_address2,
+                'default_town_or_city': order.town_or_city,
+                'default_postcode': order.postcode,
+                'default_county': order.county,
+                'default_country': order.country,
+            }
+
+            # Create an instance of the user profile form, using the
+            # profile data and tell it to update the profile we've
+            # obtained from above, and if the form is valid,
+            # save it.
+            user_profile_form = UserProfileForm(profile_data, instance=profile)
+            if user_profile_form.is_valid():
+                user_profile_form.save()
+
     messages.success(request, f'Order Successfully processed! \
         Your order number is {order_number}. A confirmation \
             email will be sent to {order.email}.')
@@ -166,7 +220,7 @@ def checkout_success(request, order_number):
     # Delete shopping bag from the session
     if 'bag' in request.session:
         del request.session['bag']
-    
+
     # Set the template and the context
     template = 'checkout/checkout_success.html'
     context = {
