@@ -2,6 +2,7 @@ from django.http import HttpResponse
 
 from .models import Order, OrderLineItem
 from products.models import Product
+from profiles.models import UserProfile
 
 import json
 import time
@@ -42,6 +43,26 @@ class StripeWH_Handler:
             if value == "":
                 shipping_details.address[field] = None
 
+
+        # Update profile information is save_info is checked
+
+        # To allow anoynmous user to checkout
+        profile = None
+        username = intent.metadata.username
+        if username != 'AnonymousUser':
+            profile = UserProfile.objects.get(user__username=username)
+            if save_info:
+                # Update shipping details with their default delivery information
+                profile.default_phone_number = shipping_details.phone
+                profile.default_country = shipping_details.address.country
+                profile.default_postcode = shipping_details.address.postal_code
+                profile.default_town_or_city = shipping_details.address.city
+                profile.default_street_address1 = shipping_details.address.line1
+                profile.default_street_address2 = shipping_details.address.line2
+                profile.default_county = shipping_details.address.state
+                # Save profile
+                profile.save()
+
         order_exists = False
 
         # Create a delay incase the view is slow
@@ -51,6 +72,7 @@ class StripeWH_Handler:
                 order = Order.objects.get(
                     # Use iexact to get an exact match but case-insensitive
                     full_name__iexact=shipping_details.name,
+                    user_profile=profile,
                     email__iexact=billing_details.email,
                     phone_number__iexact=shipping_details.phone,
                     country__iexact=shipping_details.address.country,
