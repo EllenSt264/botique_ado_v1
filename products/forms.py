@@ -8,11 +8,11 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = '__all__'
 
-    def __init__(self, args, **kwargs):
-        super().__init__(args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # Display categories with their friendly name
         categories = Category.objects.all()
-        friendly_names = [c(c.id, c.get_friendly_name()) for c in categories]
+        friendly_names = [(c.id, c.get_friendly_name()) for c in categories]
 
         # Set classes on fields so they match the site's theme
         self.fields['category'].choices = friendly_names
